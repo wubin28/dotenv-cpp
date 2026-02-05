@@ -1,1 +1,95 @@
-build/*
+# Build directories
+build/
+out/
+cmake-build-*/
+dist/
+.cmake/
+
+# CMake generated files
+CMakeUserPresets.json
+*.cmake
+!CMakeLists.txt
+
+# Compiled object files
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
+*.exe
+
+# Compiler and linker outputs
+*.out
+*.app
+
+# IDE and Editor specific
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Visual Studio cache/options
+.vs/
+.vs
+*.vcxproj.user
+*.vcxproj.filters
+*.sln
+
+# Debug and release outputs
+Debug/
+Release/
+x64/
+x86/
+*.pdb
+*.ilk
+
+# Testing
+*.gtest
+Testing/
+CTestTestfile.cmake
+
+# Dependencies (if using vcpkg or conan)
+vcpkg_installed/
+conan/
+.conan*/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary/Cache files
+*.tmp
+*.bak
+*.cache
+__pycache__/
+.pytest_cache/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+.directory
+.Trash-*/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Generated documentation
+docs/generated/
+doxygen/
+html/
+
+# Package managers
+node_modules/
