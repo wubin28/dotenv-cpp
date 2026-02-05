@@ -13,7 +13,7 @@
 ### 1.2 主要功能
 
 | 功能 | 说明 | 示例 |
-|------|------|------|
+| --- | --- | --- |
 | 加载.env文件 | 读取KEY=value格式的配置文件并设置环境变量 | `dotenv::init()` |
 | 变量引用 | 支持`$VARIABLE`和`${VARIABLE}`语法引用其他变量 | `PATH=${HOME}/bin` |
 | 引号支持 | 支持单引号和双引号包裹值，自动去除引号 | `PASSWORD="my pass"` |
@@ -31,7 +31,7 @@
 ### 1.4 优势分析
 
 | 优势 | 具体表现 | 对比传统方式 |
-|------|----------|--------------|
+| --- | --- | --- |
 | 配置分离 | 敏感信息（密码、API密钥）与代码分离，.env文件可加入.gitignore | 传统硬编码方式需要重新编译才能修改配置 |
 | 易于维护 | 多环境配置切换只需替换.env文件，无需修改代码 | 传统方式需要ifdef或配置类，增加复杂度 |
 | 开发便利 | 遵循12-Factor App方法论，与Node.js、Python等生态系统一致 | C++项目缺少统一的配置管理标准 |
@@ -40,7 +40,7 @@
 ### 1.5 劣势分析
 
 | 劣势 | 影响 | 缓解方案 |
-|------|------|----------|
+| --- | --- | --- |
 | 缺少类型转换 | 所有值都是字符串，需手动转换为int/bool/double等类型 | 可扩展：添加`getenv_int()`等类型安全函数（见Part 4） |
 | 错误处理简单 | 错误只输出到cout，无法自定义处理或记录日志 | 可扩展：支持错误回调或返回Error对象 |
 | 功能相对基础 | 不支持复杂配置（嵌套对象、数组、验证规则） | 适用场景明确：简单键值对配置，非复杂配置系统 |
@@ -48,42 +48,36 @@
 
 ### 1.6 适用场景
 
-#### ✅ 适合的场景
+### ✅ 适合的场景
 
 - **需要配置文件与代码分离的C++项目**
-  - 数据库连接信息、API端点、服务端口等
-  - 不同部署环境（开发/测试/生产）使用不同配置
-
+    - 数据库连接信息、API端点、服务端口等
+    - 不同部署环境（开发/测试/生产）使用不同配置
 - **多环境部署**
-  - 本地开发使用`.env.local`
-  - CI/CD使用`.env.test`
-  - 生产环境使用`.env.production`
-
+    - 本地开发使用`.env.local`
+    - CI/CD使用`.env.test`
+    - 生产环境使用`.env.production`
 - **敏感信息管理**
-  - 密码、API密钥、证书路径不进入版本控制
-  - 团队成员各自维护本地.env文件
-
+    - 密码、API密钥、证书路径不进入版本控制
+    - 团队成员各自维护本地.env文件
 - **快速原型开发**
-  - 简单配置需求，无需引入重量级配置库
-  - Header-only特性便于快速集成
+    - 简单配置需求，无需引入重量级配置库
+    - Header-only特性便于快速集成
 
-#### ❌ 不适合的场景
+### ❌ 不适合的场景
 
 - **需要复杂配置结构**
-  - 嵌套对象、数组、映射等复杂数据结构
-  - 推荐使用JSON/YAML/TOML库
-
+    - 嵌套对象、数组、映射等复杂数据结构
+    - 推荐使用JSON/YAML/TOML库
 - **需要运行时动态重载配置**
-  - dotenv在程序启动时加载一次，不支持热重载
-  - 需要配置变更通知机制的场景
-
+    - dotenv在程序启动时加载一次，不支持热重载
+    - 需要配置变更通知机制的场景
 - **需要配置验证和Schema**
-  - 无内置验证功能（必填检查、格式验证、范围检查）
-  - 需要配置错误时的严格控制
-
+    - 无内置验证功能（必填检查、格式验证、范围检查）
+    - 需要配置错误时的严格控制
 - **对性能极度敏感的场景**
-  - 每次`getenv()`调用都是系统调用，无缓存
-  - 频繁访问（每秒数万次）可能成为瓶颈
+    - 每次`getenv()`调用都是系统调用，无缓存
+    - 频繁访问（每秒数万次）可能成为瓶颈
 
 ---
 
@@ -93,55 +87,70 @@
 
 在开始之前，请在PowerShell中运行以下命令验证环境：
 
-#### 检查清单
+### 检查清单
 
 **1. Visual Studio 2022已安装**
+
 ```powershell
-# 检查VS安装路径（根据您的版本类型调整：Community/Professional/Enterprise）
-Test-Path "C:\Program Files\Microsoft Visual Studio\2022\Community"
+# Visual studio 2026 community
+Test-Path "C:\Program Files\Microsoft Visual Studio\18\Community"
 ```
+
 预期输出：`True`
 
 **2. CMake可用**
+
 ```powershell
+Test-Path "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin", "User")
+
+# 关闭并重新打开 PowerShell
 cmake --version
 ```
-预期输出：`cmake version 3.x.x`（至少3.10）
+
+预期输出：`cmake version 4.1.1-msvc1`（至少3.10）
 
 **3. Git可用**
+
 ```powershell
 git --version
 ```
+
 预期输出：`git version 2.x.x`
 
 **4. C++编译器可用**
 
 首先初始化VS环境（每次打开新PowerShell窗口都需要执行）：
+
 ```powershell
 # 根据您的VS版本类型替换路径中的Community/Professional/Enterprise
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
+& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64
 ```
 
 然后测试编译器：
+
 ```powershell
 cl
 ```
+
 预期输出：显示Microsoft C/C++编译器版本信息
 
-#### 环境初始化说明
+### 环境初始化说明
 
 **重要**：每次打开新PowerShell窗口，都需要先初始化VS开发环境才能使用`cl`等编译工具：
 
 ```powershell
 # 将路径中的Community替换为您的VS版本类型
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
+& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64
 ```
 
 执行成功后会显示：
+
 ```
 **********************************************************************
-** Visual Studio 2022 Developer PowerShell v17.x.x
-** Copyright (c) 2022 Microsoft Corporation
+** Visual Studio 2026 Developer PowerShell v18.2.1
+** Copyright (c) 2025 Microsoft Corporation
 **********************************************************************
 ```
 
@@ -151,37 +160,41 @@ cl
 
 这种方式最简单，适合快速验证dotenv-cpp的功能。
 
-#### 2.1.1 创建测试项目
+### 2.1.1 创建测试项目
 
 **步骤1**：创建工作目录
+
 ```powershell
 # 在用户目录创建测试文件夹
-cd $HOME
+cd $HOME\OOR\katas
 mkdir dotenv-test
 cd dotenv-test
 ```
 
 **步骤2**：复制头文件
+
 ```powershell
 # 复制dotenv.h到当前目录
 # 替换<path-to-dotenv-cpp>为实际路径，例如：C:\Users\YourName\dotenv-cpp
-cp <path-to-dotenv-cpp>\include\laserpants\dotenv\dotenv.h .
+cp ..\dotenv-cpp\include\laserpants\dotenv\dotenv.h .
 ```
 
 **验证点**：检查文件是否存在
+
 ```powershell
 ls dotenv.h
 ```
+
 应该看到文件信息。
 
-#### 2.1.2 编写示例程序
+### 2.1.2 编写示例程序
 
 创建文件`example.cpp`，内容如下：
 
 ```cpp
 // example.cpp
-#include <iostream>
-#include "dotenv.h"
+#include<iostream>
+#include"dotenv.h"
 
 int main()
 {
@@ -203,17 +216,18 @@ int main()
 ```
 
 **创建方式**：
+
 ```powershell
 # 使用记事本创建文件
 notepad example.cpp
 # 在打开的记事本中粘贴上述代码，保存后关闭
 ```
 
-#### 2.1.3 创建.env文件
+### 2.1.3 创建.env文件
 
 创建文件`.env`，内容如下：
 
-```shell
+```bash
 DATABASE_HOST=localhost
 DATABASE_USERNAME=testuser
 DATABASE_PASSWORD="my_secret_password"
@@ -222,6 +236,7 @@ DATABASE_PASSWORD="my_secret_password"
 **创建方式**：
 
 **方法1**：直接用命令创建
+
 ```powershell
 @"
 DATABASE_HOST=localhost
@@ -231,6 +246,7 @@ DATABASE_PASSWORD="my_secret_password"
 ```
 
 **方法2**：用记事本编辑
+
 ```powershell
 notepad .env
 # 粘贴内容后保存
@@ -242,9 +258,10 @@ notepad .env
 - 以`#`开头的行是注释
 - 支持空行
 
-#### 2.1.4 编译运行
+### 2.1.4 编译运行
 
 **编译命令**：
+
 ```powershell
 # 确保已初始化VS环境（步骤2.0中的命令）
 cl /EHsc /std:c++17 example.cpp /Fe:example.exe
@@ -258,6 +275,7 @@ cl /EHsc /std:c++17 example.cpp /Fe:example.exe
 - `/Fe:example.exe`：指定输出文件名（File executable）
 
 **预期输出**：
+
 ```
 Microsoft (R) C/C++ Optimizing Compiler Version 19.xx.xxxxx for x64
 Copyright (C) Microsoft Corporation.  All rights reserved.
@@ -271,11 +289,13 @@ example.obj
 ```
 
 **运行程序**：
+
 ```powershell
 .\example.exe
 ```
 
 **预期输出**：
+
 ```
 DATABASE_HOST: localhost
 DATABASE_USERNAME: testuser
@@ -287,21 +307,23 @@ DATABASE_PORT: 3306
 - 输出的值与.env文件中的一致
 - `DATABASE_PORT`显示默认值3306（因为.env中未定义）
 
-#### 2.1.5 验证结果与功能测试
+### 2.1.5 验证结果与功能测试
 
-##### 测试1：变量引用功能
+### 测试1：变量引用功能
 
 修改`.env`文件为：
-```shell
+
+```bash
 BASE_PATH=C:\data
 LOG_PATH=$BASE_PATH\logs
 CONFIG_PATH=${BASE_PATH}\config
 ```
 
 修改`example.cpp`为：
+
 ```cpp
-#include <iostream>
-#include "dotenv.h"
+#include<iostream>
+#include"dotenv.h"
 
 int main()
 {
@@ -314,12 +336,14 @@ int main()
 ```
 
 重新编译运行：
+
 ```powershell
 cl /EHsc /std:c++17 example.cpp /Fe:example.exe
 .\example.exe
 ```
 
 **预期输出**：
+
 ```
 BASE_PATH: C:\data
 LOG_PATH: C:\data\logs
@@ -328,13 +352,14 @@ CONFIG_PATH: C:\data\config
 
 说明变量引用功能正常工作，`$BASE_PATH`和`${BASE_PATH}`都被正确替换。
 
-##### 测试2：Preserve模式
+### 测试2：Preserve模式
 
 修改`example.cpp`测试Preserve标志：
+
 ```cpp
-#include <iostream>
-#include <cstdlib>
-#include "dotenv.h"
+#include<iostream>
+#include<cstdlib>
+#include"dotenv.h"
 
 int main()
 {
@@ -353,19 +378,22 @@ int main()
 ```
 
 将.env文件改回：
-```shell
+
+```bash
 DATABASE_HOST=localhost
 DATABASE_USERNAME=testuser
 DATABASE_PASSWORD="my_secret_password"
 ```
 
 重新编译运行：
+
 ```powershell
 cl /EHsc /std:c++17 example.cpp /Fe:example.exe
 .\example.exe
 ```
 
 **预期输出**：
+
 ```
 Before init: already_set
 After init with Preserve: already_set
@@ -379,9 +407,10 @@ After init with Preserve: already_set
 
 这种方式更接近专业C++项目的标准做法，适合正式项目使用。
 
-#### 2.2.1 配置CMake
+### 2.2.1 配置CMake
 
 **步骤1**：进入项目目录
+
 ```powershell
 # 进入dotenv-cpp项目目录
 cd <path-to-dotenv-cpp>
@@ -389,6 +418,7 @@ cd <path-to-dotenv-cpp>
 ```
 
 **步骤2**：创建构建目录（如果不存在或需要清理）
+
 ```powershell
 # 如果build目录已存在，先清理
 if (Test-Path build) { Remove-Item -Recurse -Force build }
@@ -397,7 +427,14 @@ cd build
 ```
 
 **步骤3**：配置CMake项目
+
 ```powershell
+& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64
+
+cl
+
+cd <path-to-dotenv-cpp>\build
+
 # 配置项目，启用测试，禁用文档生成
 cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTS=ON -DBUILD_DOCS=OFF
 ```
@@ -410,28 +447,88 @@ cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTS=ON -DBUILD_DOCS=OFF
 - `-DBUILD_DOCS=OFF`：禁用文档生成（需要Doxygen，可选）
 
 **预期输出**（关键信息）：
+
 ```
--- The CXX compiler identification is MSVC 19.xx.xxxxx
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- The CXX compiler identification is MSVC 19.50.35723.0
 -- Detecting CXX compiler ABI info
 -- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/.../cl.exe - skipped
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/cl.exe - skipped
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: .../build
+CMake Warning (dev) at C:/Program Files/Microsoft Visual Studio/18/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.1/Modules/FetchContent.cmake:1373 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  CMakeLists.txt:79 (fetchcontent_declare)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Deprecation Warning at build/_deps/googletest-src/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- The C compiler identification is MSVC 19.50.35723.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+CMake Deprecation Warning at build/_deps/googletest-src/googlemock/CMakeLists.txt:39 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Deprecation Warning at build/_deps/googletest-src/googletest/CMakeLists.txt:49 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Could NOT find Python (missing: Python_EXECUTABLE Interpreter)
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - not found
+-- Found Threads: TRUE
+-- Configuring done (15.7s)
+-- Generating done (0.1s)
+-- Build files have been written to: C:/Users/wubin/OOR/katas/dotenv-cpp/build
 ```
 
 **验证点**：
+
 ```powershell
 # 检查是否生成了.sln文件
 ls *.sln
 ```
+
 应该看到`laserpants_dotenv.sln`。
 
-#### 2.2.2 编译项目
+### 2.2.2 编译项目
 
 **编译命令**：
+
 ```powershell
 # 使用CMake编译（Release模式）
 cmake --build . --config Release
@@ -442,28 +539,61 @@ cmake --build . --config Release
 - `--config Release`：编译Release版本（也可以用Debug）
 
 **预期输出**：
+
 ```
-Microsoft (R) Build Engine version 17.x.xxxxx
-  ...
-  Building Custom Rule ...
-  Fetching googletest...
-  ...
-  tests.vcxproj -> ...\build\Release\tests.exe
-Build succeeded.
+MSBuild version 18.0.5+e22287bf1 for .NET Framework
+
+  Checking File Globs
+  1>Checking Build System
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/build/_deps/googletest-src/googlemock/CMakeLists.txt
+  gtest-all.cc
+  gmock-all.cc
+  Generating Code...
+  gmock.vcxproj -> C:\Users\wubin\OOR\katas\dotenv-cpp\build\lib\Release\gmock.lib
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/build/_deps/googletest-src/googlemock/CMakeLists.txt
+  gtest-all.cc
+  gmock-all.cc
+  gmock_main.cc
+  Generating Code...
+  gmock_main.vcxproj -> C:\Users\wubin\OOR\katas\dotenv-cpp\build\lib\Release\gmock_main.lib
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/build/_deps/googletest-src/googletest/CMakeLists.txt
+  gtest-all.cc
+  gtest.vcxproj -> C:\Users\wubin\OOR\katas\dotenv-cpp\build\lib\Release\gtest.lib
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/build/_deps/googletest-src/googletest/CMakeLists.txt
+  gtest_main.cc
+  gtest_main.vcxproj -> C:\Users\wubin\OOR\katas\dotenv-cpp\build\lib\Release\gtest_main.lib
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/CMakeLists.txt
+  base_test.cc
+C:\Users\wubin\OOR\katas\dotenv-cpp\include\laserpants\dotenv\dotenv.h(162,28): warning C4996: 'getenv': This function or varia
+ble may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for d
+etails. [C:\Users\wubin\OOR\katas\dotenv-cpp\build\tests.vcxproj]
+  (compiling source file '../tests/base_test.cc')
+
+C:\Users\wubin\OOR\katas\dotenv-cpp\include\laserpants\dotenv\dotenv.h(295,43): warning C4996: 'getenv': This function or varia
+ble may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for d
+etails. [C:\Users\wubin\OOR\katas\dotenv-cpp\build\tests.vcxproj]
+  (compiling source file '../tests/base_test.cc')
+
+  tests.vcxproj -> C:\Users\wubin\OOR\katas\dotenv-cpp\build\Release\tests.exe
+  Building Custom Rule C:/Users/wubin/OOR/katas/dotenv-cpp/CMakeLists.txt
 ```
 
 **验证点**：
+
 ```powershell
 # 检查测试可执行文件是否生成
 ls Release\tests.exe
 ```
 
-#### 2.2.3 运行测试
+### 2.2.3 运行测试
 
-##### 方法1：使用CTest（推荐）
+### 方法1：使用CTest（推荐）
 
 **运行CMake测试**：
+
 ```powershell
+# 在build目录下创建.env.example文件并插入一行“DEFINED_VAR="OLHE"”
+
 # 使用ctest运行所有测试
 ctest -C Release --output-on-failure
 ```
@@ -474,19 +604,20 @@ ctest -C Release --output-on-failure
 - `--output-on-failure`：失败时显示详细输出
 
 **预期输出**：
+
 ```
-Test project C:/Users/.../dotenv-cpp/build
+Test project C:/Users/wubin/OOR/katas/dotenv-cpp/build
     Start 1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue
 1/2 Test #1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue ...   Passed    0.01 sec
     Start 2: BaseTestFixture.ReadDefinedVariableWithDefaultValue
-2/2 Test #2: BaseTestFixture.ReadDefinedVariableWithDefaultValue ...   Passed    0.01 sec
+2/2 Test #2: BaseTestFixture.ReadDefinedVariableWithDefaultValue .....   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 2
 
 Total Test time (real) =   0.03 sec
 ```
 
-##### 方法2：手动运行测试可执行文件
+### 方法2：手动运行测试可执行文件
 
 ```powershell
 # 直接运行tests.exe查看详细输出
@@ -494,7 +625,9 @@ Total Test time (real) =   0.03 sec
 ```
 
 **预期输出**：
+
 ```
+Running main() from C:\Users\wubin\OOR\katas\dotenv-cpp\build\_deps\googletest-src\googletest\src\gtest_main.cc
 [==========] Running 2 tests from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 2 tests from BaseTestFixture
@@ -502,22 +635,24 @@ Total Test time (real) =   0.03 sec
 [       OK ] BaseTestFixture.ReadUndefinedVariableWithDefaultValue (0 ms)
 [ RUN      ] BaseTestFixture.ReadDefinedVariableWithDefaultValue
 [       OK ] BaseTestFixture.ReadDefinedVariableWithDefaultValue (0 ms)
-[----------] 2 tests from BaseTestFixture (0 ms total)
+[----------] 2 tests from BaseTestFixture (2 ms total)
 
 [----------] Global test environment tear-down
-[==========] 2 tests from 1 test suite ran. (1 ms total)
+[==========] 2 tests from 1 test suite ran. (4 ms total)
 [  PASSED  ] 2 tests.
 ```
 
-#### 2.2.4 安装到系统
+### 2.2.4 安装到系统
 
 **注意**：此步骤需要管理员权限。
 
 **以管理员身份运行PowerShell**：
-- 按`Win+X`，选择"Windows Terminal (管理员)"
-- 或在开始菜单中右键PowerShell图标 → "以管理员身份运行"
+- 在windows terminal中按住Ctrl键选择Powershell 7
+- 按`Win+X`，选择”Windows Terminal (管理员)”
+- 或在开始菜单中右键PowerShell图标 → “以管理员身份运行”
 
 **安装命令**：
+
 ```powershell
 # 确保当前在build目录
 cd <path-to-dotenv-cpp>\build
@@ -531,37 +666,101 @@ cmake --install . --config Release
 - `--config Release`：安装Release版本
 
 **预期输出**：
+
 ```
--- Install configuration: "Release"
--- Installing: C:/Program Files (x86)/laserpants_dotenv/include/laserpants/dotenv-0.9.3/laserpants_dotenv-config.h
--- Installing: C:/Program Files (x86)/laserpants_dotenv/include/laserpants/dotenv-0.9.3/dotenv.h
--- Installing: C:/Program Files (x86)/laserpants_dotenv/lib/cmake/laserpants_dotenv/laserpants_dotenv-config.cmake
-...
+-- Installing: C:/Program Files/laserpants_dotenv/include/laserpants/dotenv-0.9.3/laserpants_dotenv-config.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/laserpants/dotenv-0.9.3/dotenv.h
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/laserpants_dotenv/laserpants_dotenv-config.cmake
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/laserpants_dotenv/dotenv.cmake
+-- Up-to-date: C:/Program Files/laserpants_dotenv/include
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-actions.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-cardinalities.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-function-mocker.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-matchers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-more-actions.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-more-matchers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-nice-strict.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock-spec-builders.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/gmock.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/custom
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/custom/gmock-generated-actions.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/custom/gmock-matchers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/custom/gmock-port.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/custom/README.md
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/gmock-internal-utils.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/gmock-port.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gmock/internal/gmock-pp.h
+-- Installing: C:/Program Files/laserpants_dotenv/lib/gmock.lib
+-- Installing: C:/Program Files/laserpants_dotenv/lib/gmock_main.lib
+-- Installing: C:/Program Files/laserpants_dotenv/lib/pkgconfig/gmock.pc
+-- Installing: C:/Program Files/laserpants_dotenv/lib/pkgconfig/gmock_main.pc
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/GTest/GTestTargets.cmake
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/GTest/GTestTargets-release.cmake
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/GTest/GTestConfigVersion.cmake
+-- Installing: C:/Program Files/laserpants_dotenv/lib/cmake/GTest/GTestConfig.cmake
+-- Up-to-date: C:/Program Files/laserpants_dotenv/include
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-assertion-result.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-death-test.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-matchers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-message.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-param-test.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-printers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-spi.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-test-part.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest-typed-test.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest_pred_impl.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/gtest_prod.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/custom
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/custom/gtest-port.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/custom/gtest-printers.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/custom/gtest.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/custom/README.md
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-death-test-internal.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-filepath.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-internal.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-param-util.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-port-arch.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-port.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-string.h
+-- Installing: C:/Program Files/laserpants_dotenv/include/gtest/internal/gtest-type-util.h
+-- Installing: C:/Program Files/laserpants_dotenv/lib/gtest.lib
+-- Installing: C:/Program Files/laserpants_dotenv/lib/gtest_main.lib
+-- Installing: C:/Program Files/laserpants_dotenv/lib/pkgconfig/gtest.pc
+-- Installing: C:/Program Files/laserpants_dotenv/lib/pkgconfig/gtest_main.pc
 ```
 
 **自定义安装路径**（可选，无需管理员权限）：
+
 ```powershell
 # 安装到自定义位置
 cmake --install . --config Release --prefix C:\local\dotenv
 ```
 
 **验证点**：
+
 ```powershell
 # 检查安装的头文件（根据实际安装路径调整）
-ls "C:\Program Files (x86)\laserpants_dotenv\include\laserpants\dotenv-0.9.3\dotenv.h"
+ls "C:/Program Files/laserpants_dotenv/include/laserpants/dotenv-0.9.3/dotenv.h"
 ```
 
-#### 2.2.5 创建新项目使用
+### 2.2.5 创建新项目使用
 
 **步骤1**：创建新项目目录
+
 ```powershell
 cd $HOME
-mkdir my-dotenv-project
-cd my-dotenv-project
+mkdir dotenv-cpp-test-2026-02-05--14-09
+cd dotenv-cpp-test-2026-02-05--14-09
 ```
 
-**步骤2**：创建CMakeLists.txt
-```cmake
+**步骤2**：用vscode创建CMakeLists.txt
+
+```
 cmake_minimum_required(VERSION 3.10)
 project(my_app)
 
@@ -575,23 +774,12 @@ add_executable(my_app main.cpp)
 target_link_libraries(my_app laserpants::dotenv)
 ```
 
-**创建方式**：
-```powershell
-@"
-cmake_minimum_required(VERSION 3.10)
-project(my_app)
 
-find_package(laserpants_dotenv REQUIRED)
+**步骤3**：用vscode创建main.cpp
 
-add_executable(my_app main.cpp)
-target_link_libraries(my_app laserpants::dotenv)
-"@ | Out-File -Encoding utf8 CMakeLists.txt
-```
-
-**步骤3**：创建main.cpp
 ```cpp
-#include <iostream>
-#include <dotenv.h>
+#include<iostream>
+#include<dotenv.h>
 
 int main()
 {
@@ -602,27 +790,21 @@ int main()
 }
 ```
 
-**创建方式**：
-```powershell
-notepad main.cpp
-# 粘贴上述代码，保存
-```
+**步骤4**：用vscode创建.env文件
 
-**步骤4**：创建.env文件
 ```powershell
-@"
 DATABASE_HOST=production.example.com
-"@ | Out-File -Encoding utf8 .env
 ```
 
 **步骤5**：编译和运行
+
 ```powershell
 # 创建构建目录
 mkdir build
 cd build
 
 # 配置（如果使用自定义安装路径，需要设置CMAKE_PREFIX_PATH）
-cmake .. -G "Visual Studio 17 2022" -A x64
+cmake .. -G "Visual Studio 18 2026" -A x64
 
 # 如果dotenv安装在自定义路径，添加CMAKE_PREFIX_PATH：
 # cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=C:\local\dotenv
@@ -632,13 +814,14 @@ cmake --build . --config Release
 
 # 进入Release目录，复制.env文件
 cd Release
-cp ..\..\. env .
+cp ..\..\.env .
 
 # 运行
 .\my_app.exe
 ```
 
 **预期输出**：
+
 ```
 App started!
 DB: production.example.com
@@ -652,24 +835,24 @@ DB: production.example.com
 
 当您需要调试代码时，可以结合命令行构建和VS调试。
 
-#### 2.3.1 用VS打开项目
+### 2.3.1 用VS打开项目
 
-##### 方法1：打开解决方案文件
+### 方法1：打开解决方案文件
 
 1. 打开文件资源管理器，进入`<dotenv-cpp>\build`目录
 2. 双击`laserpants_dotenv.sln`文件
 3. Visual Studio 2022将自动启动并加载项目
 
-##### 方法2：从VS菜单打开
+### 方法2：从VS菜单打开
 
 1. 启动Visual Studio 2022
 2. 点击菜单：`文件` → `打开` → `项目/解决方案`
 3. 导航到`<dotenv-cpp>\build\laserpants_dotenv.sln`并打开
 
-#### 2.3.2 在VS中运行测试
+### 2.3.2 在VS中运行测试
 
 **步骤1**：设置启动项目
-1. 在右侧"解决方案资源管理器"窗口中找到`tests`项目
+1. 在右侧”解决方案资源管理器”窗口中找到`tests`项目
 2. 右键点击`tests`项目
 3. 选择`设为启动项目`（菜单中会显示为粗体）
 
@@ -681,42 +864,42 @@ DB: production.example.com
 5. 点击`确定`保存
 
 **步骤3**：设置断点
-1. 在"解决方案资源管理器"中展开`tests`项目
-2. 展开"源文件"文件夹
+1. 在”解决方案资源管理器”中展开`tests`项目
+2. 展开”源文件”文件夹
 3. 双击`base_test.cc`打开文件
 4. 在代码行号左侧（灰色区域）点击，设置断点（会出现红色圆点）
-   - 例如在第12行`const auto _value = dotenv::getenv(...)`处设置断点
+- 例如在第12行`const auto _value = dotenv::getenv(...)`处设置断点
 
 **步骤4**：启动调试
-1. 按`F5`键或点击工具栏上的绿色"本地Windows调试器"箭头按钮
+1. 按`F5`键或点击工具栏上的绿色”本地Windows调试器”箭头按钮
 2. 程序将编译（如果有更改）并运行
 3. 当执行到断点时会自动暂停
 4. 使用以下快捷键调试：
-   - `F10`：单步跳过（Step Over）- 执行当前行，不进入函数内部
-   - `F11`：单步进入（Step Into）- 进入函数内部
-   - `F5`：继续执行（Continue）- 运行到下一个断点
-   - `Shift+F5`：停止调试
+- `F10`：单步跳过（Step Over）- 执行当前行，不进入函数内部
+- `F11`：单步进入（Step Into）- 进入函数内部
+- `F5`：继续执行（Continue）- 运行到下一个断点
+- `Shift+F5`：停止调试
 
 **步骤5**：查看变量和输出
 1. 调试过程中，将鼠标悬停在变量名上可查看其值
-2. 或在底部"自动"/"局部变量"窗口查看所有变量
+2. 或在底部”自动”/“局部变量”窗口查看所有变量
 3. 打开`视图` → `输出`窗口查看Google Test的测试结果
 4. 如果测试失败，会显示详细错误信息
 
-#### 2.3.3 调试自己的示例程序
+### 2.3.3 调试自己的示例程序
 
 如果要调试方式一中创建的example.cpp：
 
 **步骤1**：在VS中创建临时项目
 1. `文件` → `新建` → `项目`
-2. 在模板中选择"空项目"（C++）
+2. 在模板中选择”空项目”（C++）
 3. 点击`下一步`
 4. 项目名称：`dotenv_debug`
 5. 位置：`$HOME\dotenv-test`（您创建example.cpp的目录）
 6. 点击`创建`
 
 **步骤2**：添加现有文件
-1. 在右侧"解决方案资源管理器"中，右键点击`源文件`文件夹
+1. 在右侧”解决方案资源管理器”中，右键点击`源文件`文件夹
 2. 选择`添加` → `现有项`
 3. 浏览并选择`example.cpp`文件
 
@@ -737,16 +920,17 @@ DB: production.example.com
 1. 在example.cpp中设置断点（例如在`dotenv::init()`行）
 2. 按`F5`启动调试
 3. 使用`F10`/`F11`单步执行
-4. 在"自动"窗口监视变量值（如`DATABASE_HOST`的值）
-5. 在"输出"窗口查看cout输出
+4. 在”自动”窗口监视变量值（如`DATABASE_HOST`的值）
+5. 在”输出”窗口查看cout输出
 
 ---
 
 ### 2.4 常见问题排查
 
-#### Q1：cl命令找不到
+### Q1：cl命令找不到
 
 **现象**：
+
 ```
 cl : 无法将"cl"项识别为 cmdlet、函数、脚本文件或可运行程序的名称。
 ```
@@ -754,6 +938,7 @@ cl : 无法将"cl"项识别为 cmdlet、函数、脚本文件或可运行程序�
 **原因**：未初始化Visual Studio开发环境。
 
 **解决**：
+
 ```powershell
 # 运行VS初始化脚本（根据您的VS版本和版本类型调整路径）
 # Community版本：
@@ -766,9 +951,10 @@ cl : 无法将"cl"项识别为 cmdlet、函数、脚本文件或可运行程序�
 & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1"
 ```
 
-#### Q2：cmake命令找不到
+### Q2：cmake命令找不到
 
 **现象**：
+
 ```
 cmake : 无法将"cmake"项识别为 cmdlet、函数、脚本文件或可运行程序的名称。
 ```
@@ -777,16 +963,17 @@ cmake : 无法将"cmake"项识别为 cmdlet、函数、脚本文件或可运行�
 
 **解决**：
 1. 打开Visual Studio Installer
-2. 点击"修改"
-3. 在"工作负载"中确保"使用C++的桌面开发"已勾选
-4. 切换到"单个组件"选项卡
-5. 搜索"CMake"，确保"用于Windows的C++ CMake工具"已勾选
-6. 点击"修改"安装
+2. 点击”修改”
+3. 在”工作负载”中确保”使用C++的桌面开发”已勾选
+4. 切换到”单个组件”选项卡
+5. 搜索”CMake”，确保”用于Windows的C++ CMake工具”已勾选
+6. 点击”修改”安装
 7. 重启PowerShell
 
-#### Q3：CMake配置失败 - 找不到编译器
+### Q3：CMake配置失败 - 找不到编译器
 
 **现象**：
+
 ```
 CMake Error: CMake was unable to find a build program corresponding to "Visual Studio 17 2022"
 ```
@@ -794,15 +981,17 @@ CMake Error: CMake was unable to find a build program corresponding to "Visual S
 **原因**：CMake无法找到VS编译器。
 
 **解决**：
+
 ```powershell
 # 先初始化VS环境再运行cmake
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
 cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTS=ON -DBUILD_DOCS=OFF
 ```
 
-#### Q4：测试运行失败 - 找不到.env.example
+### Q4：测试运行失败 - 找不到.env.example
 
 **现象**：
+
 ```
 测试失败，或者程序运行时提示找不到.env文件
 ```
@@ -812,6 +1001,7 @@ cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTS=ON -DBUILD_DOCS=OFF
 **解决**：
 
 **方法1**：确保在正确的目录运行
+
 ```powershell
 # 对于build目录中的tests.exe
 cd <dotenv-cpp>\build\Release
@@ -820,14 +1010,16 @@ cp ..\. env.example .
 ```
 
 **方法2**：使用ctest（自动处理路径）
+
 ```powershell
 cd <dotenv-cpp>\build
 ctest -C Release --output-on-failure
 ```
 
-#### Q5：find_package找不到laserpants_dotenv
+### Q5：find_package找不到laserpants_dotenv
 
 **现象**：
+
 ```
 CMake Error at CMakeLists.txt:X (find_package):
   Could not find a package configuration file provided by "laserpants_dotenv"
@@ -836,6 +1028,7 @@ CMake Error at CMakeLists.txt:X (find_package):
 **原因**：dotenv未安装，或CMake找不到安装路径。
 
 **解决方法1**：安装dotenv到系统
+
 ```powershell
 cd <dotenv-cpp>\build
 # 以管理员身份运行
@@ -843,12 +1036,14 @@ cmake --install . --config Release
 ```
 
 **解决方法2**：指定安装路径
+
 ```powershell
 # 如果安装到自定义路径（如C:\local\dotenv）
 cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=C:\local\dotenv
 ```
 
 **解决方法3**：检查安装路径
+
 ```powershell
 # 查看dotenv实际安装位置
 ls "C:\Program Files (x86)\laserpants_dotenv"
@@ -857,9 +1052,10 @@ ls "C:\Program Files\laserpants_dotenv"
 # 如果在非标准位置，使用CMAKE_PREFIX_PATH指定
 ```
 
-#### Q6：编译时找不到dotenv.h
+### Q6：编译时找不到dotenv.h
 
 **现象**：
+
 ```
 fatal error C1083: 无法打开包括文件: "dotenv.h": No such file or directory
 ```
@@ -871,26 +1067,30 @@ fatal error C1083: 无法打开包括文件: "dotenv.h": No such file or directo
 - **方式二（CMake）**：确保使用了`target_link_libraries(target laserpants::dotenv)`，CMake会自动设置包含路径
 
 **检查CMakeLists.txt**：
-```cmake
+
+```
 # 必须有这两行
 find_package(laserpants_dotenv REQUIRED)
 target_link_libraries(my_app laserpants::dotenv)
 ```
 
-#### Q7：测试全部失败
+### Q7：测试全部失败
 
 **现象**：所有测试显示FAILED。
 
 **排查步骤**：
 
 **1. 检查.env.example文件**
+
 ```powershell
 cd <dotenv-cpp>\build
 cat .env.example
 ```
+
 应该包含：`DEFINED_VAR="OLHE"`
 
 **2. 检查工作目录**
+
 ```powershell
 # 手动运行tests.exe，查看详细错误
 cd <dotenv-cpp>\build\Release
@@ -898,6 +1098,7 @@ cd <dotenv-cpp>\build\Release
 ```
 
 **3. 查看详细输出**
+
 ```powershell
 cd <dotenv-cpp>\build
 ctest -C Release --verbose
@@ -908,9 +1109,10 @@ ctest -C Release --verbose
 - 文件编码问题（使用UTF-8 without BOM）
 - 权限问题（文件只读）
 
-#### Q8：权限不足无法安装
+### Q8：权限不足无法安装
 
 **现象**：
+
 ```
 CMake Error: failed to create directory: C:/Program Files (x86)/...
 ```
@@ -919,27 +1121,28 @@ CMake Error: failed to create directory: C:/Program Files (x86)/...
 
 **解决方法1**：以管理员身份运行
 - 关闭当前PowerShell
-- 右键PowerShell图标 → "以管理员身份运行"
+- 右键PowerShell图标 → “以管理员身份运行”
 - 重新执行安装命令
 
 **解决方法2**：安装到用户目录（无需管理员权限）
+
 ```powershell
 cmake --install . --config Release --prefix $HOME\local\dotenv
 ```
 
 然后在使用时指定路径：
+
 ```powershell
 cmake .. -DCMAKE_PREFIX_PATH=$HOME\local\dotenv
 ```
 
 ---
 
-
 ## Part 3：自动化测试运行
 
 ### 3.1 运行现有测试
 
-#### 方式1：使用CTest（推荐）
+### 方式1：使用CTest（推荐）
 
 ```powershell
 # 进入构建目录
@@ -961,7 +1164,7 @@ ctest -C Release -R "ReadDefined" --verbose
 - `--verbose`：显示详细输出
 - `-R <pattern>`：运行匹配正则表达式的测试（R = Run）
 
-#### 方式2：直接运行测试可执行文件
+### 方式2：直接运行测试可执行文件
 
 ```powershell
 cd <dotenv-cpp>\build\Release
@@ -992,8 +1195,8 @@ cp ..\.env.example .
 打开`tests/base_test.cc`，逐行解析：
 
 ```cpp
-#include <gtest/gtest.h>   // [1] Google Test框架头文件
-#include <dotenv.h>         // [2] 被测试的库
+#include<gtest/gtest.h>// [1] Google Test框架头文件
+#include<dotenv.h>// [2] 被测试的库
 
 // [3] 测试固件类：用于共享测试设置和清理
 class BaseTestFixture : public ::testing::Test {
@@ -1021,7 +1224,7 @@ TEST_F(BaseTestFixture, ReadDefinedVariableWithDefaultValue) {
 }
 ```
 
-#### 关键概念说明
+### 关键概念说明
 
 **测试固件（Test Fixture）**：
 - 用于多个测试共享相同的设置和清理逻辑
@@ -1029,9 +1232,11 @@ TEST_F(BaseTestFixture, ReadDefinedVariableWithDefaultValue) {
 - `TearDown()`：每个测试后执行（本例中未使用）
 
 **TEST_F宏**：
+
 ```cpp
 TEST_F(FixtureClass, TestName)
 ```
+
 - `FixtureClass`：测试固件类名
 - `TestName`：测试用例名称
 - 生成的完整测试名：`FixtureClass.TestName`
@@ -1045,16 +1250,18 @@ TEST_F(FixtureClass, TestName)
 
 **测试数据文件**：
 `build/.env.example`内容：
+
 ```
 DEFINED_VAR="OLHE"
 ```
-只定义了一个变量，用于测试"已定义"和"未定义"两种情况。
+
+只定义了一个变量，用于测试”已定义”和”未定义”两种情况。
 
 ---
 
 ### 3.3 添加新测试用例
 
-#### 示例1：测试变量引用功能
+### 示例1：测试变量引用功能
 
 在`tests/base_test.cc`末尾添加：
 
@@ -1070,12 +1277,14 @@ TEST_F(BaseTestFixture, VariableReferenceExpansion) {
 ```
 
 **步骤1**：修改`.env.example`
+
 ```powershell
 cd <dotenv-cpp>\build
 notepad .env.example
 ```
 
 添加内容：
+
 ```
 DEFINED_VAR="OLHE"
 BASE=hello
@@ -1083,17 +1292,19 @@ EXPANDED=$BASE world
 ```
 
 **步骤2**：重新编译测试
+
 ```powershell
 cd <dotenv-cpp>\build
 cmake --build . --config Release
 ```
 
 **步骤3**：运行新测试
+
 ```powershell
 ctest -C Release -R "VariableReference" --verbose
 ```
 
-#### 示例2：测试Preserve标志
+### 示例2：测试Preserve标志
 
 ```cpp
 TEST(DotenvPreserveTest, PreserveExistingVariable) {
@@ -1122,7 +1333,7 @@ TEST(DotenvPreserveTest, PreserveExistingVariable) {
 - 不依赖固件类，有自己的设置和清理
 - 演示了如何测试Preserve功能
 
-#### 示例3：测试错误处理
+### 示例3：测试错误处理
 
 ```cpp
 TEST(DotenvErrorTest, InvalidFileDoesNotCrash) {
@@ -1149,7 +1360,7 @@ TEST(DotenvErrorTest, MalformedLineIgnored) {
 }
 ```
 
-#### 重新运行所有测试
+### 重新运行所有测试
 
 ```powershell
 cd <dotenv-cpp>\build
@@ -1158,6 +1369,7 @@ ctest -C Release --output-on-failure
 ```
 
 预期输出：
+
 ```
 Test project ...
     Start 1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue
@@ -1178,7 +1390,7 @@ Test project ...
 
 ### 3.4 测试输出解读
 
-#### CTest输出格式
+### CTest输出格式
 
 ```
 Test project C:/Users/.../dotenv-cpp/build
@@ -1199,7 +1411,7 @@ Total Test time (real) =   0.03 sec
 - `Passed`：测试通过状态
 - `0.01 sec`：运行时间
 
-#### Google Test原始输出
+### Google Test原始输出
 
 运行`.\tests.exe`时的输出：
 
@@ -1226,7 +1438,7 @@ Total Test time (real) =   0.03 sec
 - `[  FAILED  ]`：测试失败（如果有）
 - `[  PASSED  ]`：总结信息
 
-#### 测试失败输出示例
+### 测试失败输出示例
 
 假设某个断言失败：
 
@@ -1246,7 +1458,7 @@ Expected equality of these values:
 - 期望值和实际值的对比
 - 失败的测试名称
 
-#### 使用--verbose查看详细信息
+### 使用–verbose查看详细信息
 
 ```powershell
 ctest -C Release --verbose
@@ -1262,15 +1474,14 @@ ctest -C Release --verbose
 
 ---
 
-
 ## Part 4：AI辅助开发实践指南
 
 ### 4.1 为什么dotenv-cpp适合AI辅助开发练习
 
-#### 项目特点分析
+### 项目特点分析
 
 | 特点 | 具体表现 | 对AI辅助开发的意义 |
-|------|----------|-------------------|
+| --- | --- | --- |
 | **代码规模适中** | 单头文件约400行 | AI能完整理解上下文，不会超出token限制 |
 | **功能边界清晰** | 只负责解析.env文件 | 需求描述简单明确，AI容易理解意图 |
 | **架构简单** | Header-only库，无复杂依赖 | 减少环境配置问题，专注功能开发 |
@@ -1279,7 +1490,7 @@ ctest -C Release --verbose
 | **扩展空间明显** | 缺少类型转换、验证等 | 有真实的改进需求，非为练习而练习 |
 | **技术栈现代** | C++17, CMake, Git | 学习现代C++项目标准实践 |
 
-#### 适合的学习目标
+### 适合的学习目标
 
 ✅ **理解AI辅助开发的工作流程**
 - 需求分析 → 设计讨论 → 实现 → 测试 → 审查
@@ -1300,24 +1511,25 @@ ctest -C Release --verbose
 - 保持代码风格一致
 - 向后兼容
 
-#### 不适合的场景
+### 不适合的场景
 
 ❌ 学习复杂设计模式（项目太简单）
 ❌ 学习大型项目架构（规模太小）
 ❌ 学习性能优化（非性能敏感）
 ❌ 学习并发编程（单线程）
 
-**结论**：这是一个"刚刚好"的练习项目——既不会太简单失去挑战性，也不会太复杂导致挫败感。
+**结论**：这是一个”刚刚好”的练习项目——既不会太简单失去挑战性，也不会太复杂导致挫败感。
 
 ---
 
 ### 4.2 让AI理解项目结构的方法
 
-#### 方法1：提供项目概览
+### 方法1：提供项目概览
 
-当开始与AI协作时，先提供项目的"地图"：
+当开始与AI协作时，先提供项目的”地图”：
 
 **提示词模板**：
+
 ```
 我正在使用dotenv-cpp项目，这是一个C++ header-only库，用于加载.env文件。
 
@@ -1338,9 +1550,10 @@ ctest -C Release --verbose
 我想要[具体需求]。
 ```
 
-#### 方法2：让AI先阅读代码
+### 方法2：让AI先阅读代码
 
 **提示词示例**：
+
 ```
 请阅读include/laserpants/dotenv/dotenv.h文件，理解：
 1. dotenv类的公共API
@@ -1359,21 +1572,22 @@ ctest -C Release --verbose
 - 支持Windows (_MSC_VER宏)
 - 使用std::string和标准库算法
 
-#### 方法3：提出具体问题引导AI分析
+### 方法3：提出具体问题引导AI分析
 
 **好的问题示例**：
-- "dotenv::init()和dotenv::getenv()有什么区别？"
-- "Preserve标志是如何工作的？"
-- "变量引用是在什么时候解析的？"
-- "为什么strip_quotes()函数要检查首尾字符？"
+- “dotenv::init()和dotenv::getenv()有什么区别？”
+- “Preserve标志是如何工作的？”
+- “变量引用是在什么时候解析的？”
+- “为什么strip_quotes()函数要检查首尾字符？”
 
 **避免的问题**：
-- "这个项目好不好？"（太主观）
-- "帮我改进这个项目"（太模糊）
+- “这个项目好不好？”（太主观）
+- “帮我改进这个项目”（太模糊）
 
-#### 方法4：提供测试用例帮助AI理解预期行为
+### 方法4：提供测试用例帮助AI理解预期行为
 
 **提示词示例**：
+
 ```
 这是现有的测试用例：
 [粘贴tests/base_test.cc内容]
@@ -1387,9 +1601,10 @@ ctest -C Release --verbose
 请参考现有测试的风格，为新功能设计测试用例。
 ```
 
-#### 方法5：明确约束条件
+### 方法5：明确约束条件
 
 **提示词模板**：
+
 ```
 在实现新功能时，请遵守以下约束：
 
@@ -1411,26 +1626,27 @@ ctest -C Release --verbose
 - 测试数据放在.env.example中
 ```
 
-#### 方法6：逐步验证理解
+### 方法6：逐步验证理解
 
 **对话流程示例**：
-1. **您**："请分析dotenv::do_init()函数的主要步骤"
+1. **您**：“请分析dotenv::do_init()函数的主要步骤”
 2. **AI**：[解释解析流程]
-3. **您**："正确。现在请找出哪里调用了resolve_vars()"
+3. **您**：“正确。现在请找出哪里调用了resolve_vars()”
 4. **AI**：[指出调用位置]
-5. **您**："很好。如果我想添加类型转换功能，应该在哪里添加？"
+5. **您**：“很好。如果我想添加类型转换功能，应该在哪里添加？”
 6. **AI**：[建议位置]
-7. **您**："理解了。请设计API"
+7. **您**：“理解了。请设计API”
 
 **好处**：确保AI真正理解代码，而不是猜测。
 
 ---
 
-### 4.3 实战案例：新增"类型安全访问"功能
+### 4.3 实战案例：新增”类型安全访问”功能
 
-#### 功能需求定义
+### 功能需求定义
 
 **当前问题**：
+
 ```cpp
 // 当前只能获取字符串
 std::string port_str = dotenv::getenv("PORT", "8080");
@@ -1438,6 +1654,7 @@ int port = std::stoi(port_str);  // 手动转换，可能抛异常
 ```
 
 **期望功能**：
+
 ```cpp
 // 直接获取指定类型
 int port = dotenv::getenv_int("PORT", 8080);
@@ -1445,11 +1662,12 @@ bool debug = dotenv::getenv_bool("DEBUG", false);
 double ratio = dotenv::getenv_double("RATIO", 1.5);
 ```
 
-#### 设计阶段：与AI的对话
+### 设计阶段：与AI的对话
 
 **第1轮：需求澄清**
 
 **您的提示词**：
+
 ```
 我想为dotenv-cpp添加类型安全的环境变量访问功能。
 
@@ -1464,12 +1682,13 @@ double ratio = dotenv::getenv_double("RATIO", 1.5);
 **期望AI提供的选项**：
 1. **返回默认值** - 转换失败时返回默认值（最简单）
 2. **抛出异常** - 转换失败时抛出std::invalid_argument
-3. **返回optional** - 使用std::optional<T>表示可能失败
+3. **返回optional** - 使用std::optional表示可能失败
 4. **双返回值** - 返回std::pair<T, bool>，bool表示是否成功
 
 **第2轮：选择设计方案**
 
 **您的决策**：
+
 ```
 我选择方案1（返回默认值），因为：
 1. 与现有getenv()行为一致
@@ -1480,6 +1699,7 @@ double ratio = dotenv::getenv_double("RATIO", 1.5);
 ```
 
 **期望AI提供的API设计**：
+
 ```cpp
 class dotenv {
 public:
@@ -1497,6 +1717,7 @@ public:
 **第3轮：测试驱动设计**
 
 **您的提示词**：
+
 ```
 很好。在实现之前，请先设计测试用例。
 
@@ -1510,6 +1731,7 @@ public:
 ```
 
 **期望AI生成的测试框架**（关键测试用例）：
+
 ```cpp
 // 准备测试数据（需要添加到.env.example）
 // INT_VAR=42
@@ -1538,11 +1760,12 @@ TEST_F(BaseTestFixture, GetEnvDouble_ValidValue) {
 }
 ```
 
-#### 实现阶段
+### 实现阶段
 
 **第4轮：实现功能**
 
 **您的提示词**：
+
 ```
 现在请实现这些函数。
 
@@ -1556,14 +1779,15 @@ TEST_F(BaseTestFixture, GetEnvDouble_ValidValue) {
 ```
 
 **期望AI生成的实现**（getenv_int示例）：
+
 ```cpp
 ///
 /// Convert string to int, handling conversion errors gracefully.
 ///
-/// \param name the name of the variable to look up
-/// \param def  a default value to return if variable doesn't exist or conversion fails
+///\paramname the name of the variable to look up
+///\paramdef  a default value to return if variable doesn't exist or conversion fails
 ///
-/// \returns the integer value of environment variable \a name, or \a def if the
+///\returns the integer value of environment variable\aname, or\adef if the
 ///          variable is not set or cannot be converted
 ///
 inline int dotenv::getenv_int(const char* name, int def)
@@ -1597,11 +1821,12 @@ inline int dotenv::getenv_int(const char* name, int def)
 }
 ```
 
-#### 验证阶段
+### 验证阶段
 
 **第5轮：审查代码**
 
 **您的审查清单**：
+
 ```
 请检查AI生成的代码：
 
@@ -1627,6 +1852,7 @@ inline int dotenv::getenv_int(const char* name, int def)
 **第6轮：运行测试**
 
 **您执行的步骤**：
+
 ```powershell
 # 1. 更新.env.example
 cd <dotenv-cpp>\build
@@ -1651,6 +1877,7 @@ ctest -C Release --output-on-failure
 **预期结果**：所有测试通过。
 
 **如果测试失败**：
+
 ```
 与AI对话：
 "测试失败了。这是错误输出：
@@ -1659,7 +1886,7 @@ ctest -C Release --output-on-failure
 请分析原因并修复。"
 ```
 
-#### 总结经验
+### 总结经验
 
 **成功的关键**：
 1. ✅ 需求明确（类型安全访问）
@@ -1669,7 +1896,7 @@ ctest -C Release --output-on-failure
 5. ✅ 文档更新（完整交付）
 
 **与AI协作的节奏**：
-- 不要一次性要求"实现整个功能"
+- 不要一次性要求”实现整个功能”
 - 逐步推进：需求→设计→测试→实现→验证
 - 每一步都让AI输出可审查的内容
 - 发现问题立即反馈
@@ -1688,10 +1915,9 @@ ctest -C Release --output-on-failure
 
 ---
 
-
 ### 4.4 AI协作最佳实践
 
-#### 原则1：明确角色分工
+### 原则1：明确角色分工
 
 **您（人类）负责**：
 - ✅ 定义需求和优先级
@@ -1708,13 +1934,14 @@ ctest -C Release --output-on-failure
 - ✅ 重构和优化建议
 
 **不要让AI做的**：
-- ❌ 替您做决策（"帮我决定用哪种方案"）
+- ❌ 替您做决策（“帮我决定用哪种方案”）
 - ❌ 无监督地修改代码（总是审查）
-- ❌ 评估商业价值（"这个功能有用吗"）
+- ❌ 评估商业价值（“这个功能有用吗”）
 
-#### 原则2：渐进式开发
+### 原则2：渐进式开发
 
 **推荐流程**：
+
 ```
 1. 讨论需求
    ↓
@@ -1737,6 +1964,7 @@ ctest -C Release --output-on-failure
 ```
 
 **避免的流程**：
+
 ```
 ❌ "请实现类型安全访问功能，包括代码、测试和文档"
    ↓
@@ -1747,9 +1975,10 @@ ctest -C Release --output-on-failure
    全盘接受或全盘拒绝
 ```
 
-#### 原则3：具体而非模糊的提示词
+### 原则3：具体而非模糊的提示词
 
 **好的提示词**：
+
 ```
 "请为dotenv类添加getenv_int()函数。
 
@@ -1770,14 +1999,16 @@ static int getenv_int(const char* name, int def = 0);
 ```
 
 **差的提示词**：
+
 ```
 "帮我添加类型转换功能"
 （太模糊，AI会猜测您的意图）
 ```
 
-#### 原则4：主动提供约束
+### 原则4：主动提供约束
 
 **示例约束清单**：
+
 ```
 技术约束：
 - C++17标准
@@ -1800,11 +2031,12 @@ static int getenv_int(const char* name, int def = 0);
 - 错误输出到std::cout
 ```
 
-#### 原则5：测试驱动开发
+### 原则5：测试驱动开发
 
 **与AI的TDD工作流**：
 
 **步骤1**：描述期望行为
+
 ```
 "我希望getenv_bool()能识别以下输入：
 - 'true', 'yes', 'on', '1' → true
@@ -1814,6 +2046,7 @@ static int getenv_int(const char* name, int def = 0);
 ```
 
 **步骤2**：让AI生成测试
+
 ```
 "请为上述行为编写Google Test测试用例"
 ```
@@ -1823,13 +2056,14 @@ static int getenv_int(const char* name, int def = 0);
 **步骤4**：运行测试（应该失败，因为功能未实现）
 
 **步骤5**：让AI实现功能
+
 ```
 "请实现getenv_bool()函数，使上述测试通过"
 ```
 
 **步骤6**：运行测试（应该全部通过）
 
-#### 原则6：代码审查清单
+### 原则6：代码审查清单
 
 **每次AI生成代码后，检查**：
 
@@ -1851,7 +2085,7 @@ static int getenv_int(const char* name, int def = 0);
 
 **可维护性**：
 - [ ] 命名清晰易懂
-- [ ] 注释解释"为什么"而非"是什么"
+- [ ] 注释解释”为什么”而非”是什么”
 - [ ] 函数职责单一
 - [ ] 无魔法数字（使用常量）
 
@@ -1860,11 +2094,12 @@ static int getenv_int(const char* name, int def = 0);
 - [ ] 不破坏现有API
 - [ ] Windows和Linux都能编译
 
-#### 原则7：迭代改进而非一次到位
+### 原则7：迭代改进而非一次到位
 
 **示例对话**：
 
 **第1轮**：
+
 ```
 您："实现基本的getenv_int()，只处理正常情况"
 AI：[生成简单版本]
@@ -1872,6 +2107,7 @@ AI：[生成简单版本]
 ```
 
 **第2轮**：
+
 ```
 您："现在添加错误处理，转换失败返回默认值"
 AI：[添加try-catch]
@@ -1879,55 +2115,61 @@ AI：[添加try-catch]
 ```
 
 **第3轮**：
+
 ```
 您："添加错误日志，格式与现有一致"
 AI：[添加std::cout]
 您：[审查] "完美，现在添加注释"
 ```
 
-#### 原则8：保留对话历史以保持上下文
+### 原则8：保留对话历史以保持上下文
 
 **技巧**：
 - 在长对话中，AI会记住之前的讨论
-- 可以引用之前的内容："按照我们之前讨论的方案1实现"
-- 如果AI遗忘，主动提醒："记得我们决定使用返回默认值的方式"
+- 可以引用之前的内容：“按照我们之前讨论的方案1实现”
+- 如果AI遗忘，主动提醒：“记得我们决定使用返回默认值的方式”
 
 **避免**：
 - 不要频繁开启新对话（会丢失上下文）
 - 不要在不同对话中讨论同一个功能
 
-#### 原则9：善用AI的分析能力
+### 原则9：善用AI的分析能力
 
 **不只是生成代码，还可以**：
 
 **代码审查**：
+
 ```
 "请审查这段代码，指出潜在问题：
 [粘贴代码]"
 ```
 
 **性能分析**：
+
 ```
 "这个函数的时间复杂度是多少？有优化空间吗？
 [粘贴代码]"
 ```
 
 **设计讨论**：
+
 ```
 "对于类型转换功能，有哪些设计方案？
 各有什么优缺点？"
 ```
 
 **学习辅助**：
+
 ```
 "为什么这里要用std::transform而不是循环？"
 ```
 
-#### 原则10：失败后的调试协作
+### 原则10：失败后的调试协作
 
 **当代码不工作时**：
 
 **第1步**：收集信息
+
 ```powershell
 # 记录编译错误
 cmake --build . --config Release 2> build_error.txt
@@ -1937,6 +2179,7 @@ ctest -C Release --verbose > test_output.txt
 ```
 
 **第2步**：提供给AI
+
 ```
 "编译失败，错误信息：
 [粘贴build_error.txt内容]
@@ -1948,6 +2191,7 @@ ctest -C Release --verbose > test_output.txt
 ```
 
 **第3步**：验证修复
+
 ```
 "我修改后重新编译，现在的错误是：
 [粘贴新错误]
@@ -1956,7 +2200,7 @@ ctest -C Release --verbose > test_output.txt
 ```
 
 **避免**：
-- ❌ 只说"不工作"（信息不足）
+- ❌ 只说”不工作”（信息不足）
 - ❌ 让AI猜测问题（提供确切的错误信息）
 - ❌ 一次性修改多处（不知道哪个修复生效）
 
@@ -1964,11 +2208,12 @@ ctest -C Release --verbose > test_output.txt
 
 ### 4.5 进阶练习方向
 
-完成"类型安全访问"功能后，可以继续练习以下方向。
+完成”类型安全访问”功能后，可以继续练习以下方向。
 
-#### 练习1：环境变量验证框架（中等难度）
+### 练习1：环境变量验证框架（中等难度）
 
 **功能描述**：
+
 ```cpp
 // 定义必填变量
 dotenv::require("DATABASE_HOST");  // 不存在则输出错误
@@ -1990,6 +2235,7 @@ if (!dotenv::check()) {
 - 错误收集和报告
 
 **提示词起点**：
+
 ```
 "我想为dotenv-cpp添加环境变量验证功能。
 
@@ -2001,9 +2247,10 @@ if (!dotenv::check()) {
 请提供设计方案和API原型。"
 ```
 
-#### 练习2：多文件支持（简单难度）
+### 练习2：多文件支持（简单难度）
 
 **功能描述**：
+
 ```cpp
 // 加载多个配置文件，后加载的覆盖先加载的
 dotenv::init({".env", ".env.local", ".env.production"});
@@ -2018,6 +2265,7 @@ dotenv::init_cascade(".env.local", ".env");  // local优先
 - 文件加载顺序控制
 
 **提示词起点**：
+
 ```
 "我想支持加载多个.env文件，后加载的覆盖前面的。
 
@@ -2027,9 +2275,10 @@ dotenv::init_cascade(".env.local", ".env");  // local优先
 3. 错误处理（某个文件不存在）"
 ```
 
-#### 练习3：配置导出功能（简单难度）
+### 练习3：配置导出功能（简单难度）
 
 **功能描述**：
+
 ```cpp
 // 导出当前已加载的环境变量到文件
 dotenv::export_to("backup.env");
@@ -2044,6 +2293,7 @@ dotenv::export_to("db.env", "DATABASE_");
 - 字符串处理
 
 **提示词起点**：
+
 ```
 "我想添加导出功能，将已加载的环境变量保存到文件。
 
@@ -2055,9 +2305,10 @@ dotenv::export_to("db.env", "DATABASE_");
 请提供设计建议。"
 ```
 
-#### 练习4：字符串模板功能（高级难度）
+### 练习4：字符串模板功能（高级难度）
 
 **功能描述**：
+
 ```cpp
 // 替换字符串中的环境变量
 std::string path = dotenv::expand("${HOME}/config/${ENV}.conf");
@@ -2069,6 +2320,7 @@ std::string path = dotenv::expand("${HOME}/config/${ENV}.conf");
 - 递归替换
 
 **提示词起点**：
+
 ```
 "我想添加字符串模板功能，替换字符串中的${VAR}。
 
@@ -2080,9 +2332,10 @@ std::string path = dotenv::expand("${HOME}/config/${ENV}.conf");
 请设计API。"
 ```
 
-#### 练习5：缓存机制（高级难度）
+### 练习5：缓存机制（高级难度）
 
 **功能描述**：
+
 ```cpp
 // 缓存已解析的值，避免重复getenv
 dotenv::enable_cache();
@@ -2097,6 +2350,7 @@ dotenv::clear_cache();
 - 性能测量
 
 **提示词起点**：
+
 ```
 "我想为频繁访问的环境变量添加缓存。
 
@@ -2108,13 +2362,14 @@ dotenv::clear_cache();
 请提供设计方案。"
 ```
 
-#### 练习6：错误处理改进（中等难度）
+### 练习6：错误处理改进（中等难度）
 
 **功能描述**：
+
 ```cpp
 // 设置错误处理回调
 dotenv::set_error_handler([](const dotenv::Error& err) {
-    syslog(LOG_ERR, "dotenv error: %s", err.message.c_str());
+    syslog(LOG_ERR, "dotenv error:%s", err.message.c_str());
 });
 
 // 或者返回错误而非打印
@@ -2132,6 +2387,7 @@ if (!result.success) {
 - Result类型模式
 
 **提示词起点**：
+
 ```
 "当前错误只能输出到cout，我想改进：
 
@@ -2143,9 +2399,10 @@ if (!result.success) {
 请分析各选项的优缺点。"
 ```
 
-#### 练习7：命令行工具（高级难度）
+### 练习7：命令行工具（高级难度）
 
 **功能描述**：
+
 ```bash
 # 创建dotenv命令行工具
 dotenv validate .env          # 验证文件格式
@@ -2160,6 +2417,7 @@ dotenv diff .env .env.local   # 比较两个文件
 - CMake构建配置
 
 **提示词起点**：
+
 ```
 "我想创建一个命令行工具dotenv-cli。
 
@@ -2175,7 +2433,7 @@ dotenv diff .env .env.local   # 比较两个文件
 3. 设计命令行界面"
 ```
 
-#### 练习选择建议
+### 练习选择建议
 
 **如果您是C++新手**：
 1. 开始：多文件支持（练习2）
@@ -2192,7 +2450,7 @@ dotenv diff .env .env.local   # 比较两个文件
 2. 缓存机制（练习5）- 基准测试、分析
 3. 错误处理改进（练习6）- 架构设计
 
-#### 通用建议
+### 通用建议
 
 **每个练习都遵循相同流程**：
 1. 需求分析（与AI讨论）
@@ -2229,5 +2487,4 @@ dotenv diff .env .env.local   # 比较两个文件
 - 尝试Part 3的测试用例，理解测试框架
 - 选择Part 4.5中的一个练习，开始AI辅助开发实践
 
-祝您学习愉快！
-
+祝您学习愉快！+++++++++++
