@@ -1371,19 +1371,23 @@ ctest -C Release --output-on-failure
 预期输出：
 
 ```
-Test project ...
+Test project C:/Users/wubin/OOR/katas/dotenv-cpp/build
     Start 1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue
-1/5 Test #1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue ...   Passed
+1/6 Test #1: BaseTestFixture.ReadUndefinedVariableWithDefaultValue ...   Passed    0.01 sec
     Start 2: BaseTestFixture.ReadDefinedVariableWithDefaultValue
-2/5 Test #2: BaseTestFixture.ReadDefinedVariableWithDefaultValue ...   Passed
+2/6 Test #2: BaseTestFixture.ReadDefinedVariableWithDefaultValue .....   Passed    0.01 sec
     Start 3: BaseTestFixture.VariableReferenceExpansion
-3/5 Test #3: BaseTestFixture.VariableReferenceExpansion ...   Passed
+3/6 Test #3: BaseTestFixture.VariableReferenceExpansion ..............   Passed    0.01 sec
     Start 4: DotenvPreserveTest.PreserveExistingVariable
-4/5 Test #4: DotenvPreserveTest.PreserveExistingVariable ...   Passed
+4/6 Test #4: DotenvPreserveTest.PreserveExistingVariable .............   Passed    0.01 sec
     Start 5: DotenvErrorTest.InvalidFileDoesNotCrash
-5/5 Test #5: DotenvErrorTest.InvalidFileDoesNotCrash ...   Passed
+5/6 Test #5: DotenvErrorTest.InvalidFileDoesNotCrash .................   Passed    0.01 sec
+    Start 6: DotenvErrorTest.MalformedLineIgnored
+6/6 Test #6: DotenvErrorTest.MalformedLineIgnored ....................   Passed    0.01 sec
 
-100% tests passed, 0 tests failed out of 5
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   0.07 sec
 ```
 
 ---
