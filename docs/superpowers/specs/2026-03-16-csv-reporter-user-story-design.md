@@ -1,7 +1,7 @@
 # csv-reporter — User Story & BDD Acceptance Criteria
 
 **Date:** 2026-03-16  
-**Status:** Draft  
+**Status:** Ready for Planning  
 **Scope:** End-to-end CLI behavior (纯端到端用户视角)
 
 ---
