@@ -4,10 +4,14 @@
 //  AC-H1 – validate_config with all valid values returns a Config
 //  AC-H2 – validate_config with different valid values also returns a Config
 //           (same code path – proves the program adapts to any valid .env)
+//  AC-H6 – validate_config with empty delimiter string defaults to ','
+//           (dotenv::getenv("DELIMITER","") returns "" when key absent)
+//  AC-H8 – validate_config with "json" output_format (dotenv default) returns Config
+//           (dotenv::getenv("OUTPUT_FORMAT","json") returns "json" when key absent)
 //  AC-S1 – load_config with a non-existent file returns a "[ERROR]" string
 //  AC-S4 – validate_config with non-numeric MIN_AMOUNT returns "[ERROR]"
 //  AC-S5 – validate_config with unsupported OUTPUT_FORMAT returns "[ERROR]"
-//  AC-S6 – validate_config with empty DELIMITER defaults to ','
+//  AC-S6 – validate_config with empty SALES_FILE or INVENTORY_FILE returns "[ERROR]"
 
 #include <gtest/gtest.h>
 
@@ -121,4 +125,53 @@ TEST(ValidateConfig, AC_S6_ExplicitCommaDelimiterPreserved) {
 
     ASSERT_TRUE(std::holds_alternative<Config>(result));
     EXPECT_EQ(std::get<Config>(result).delimiter, ',');
+}
+
+// ---------------------------------------------------------------------------
+// AC-H6  DELIMITER key absent from .env → defaults to ','
+// (dotenv::getenv("DELIMITER","") returns "" when key absent → validate_config
+//  treats empty string as comma)
+// ---------------------------------------------------------------------------
+
+TEST(ValidateConfig, AC_H6_MissingDelimiterKeyDefaultsToComma) {
+    auto result = validate_config("s.csv", "i.csv", "", "500", "json");
+
+    ASSERT_TRUE(std::holds_alternative<Config>(result));
+    EXPECT_EQ(std::get<Config>(result).delimiter, ',');
+}
+
+// ---------------------------------------------------------------------------
+// AC-H8  OUTPUT_FORMAT key absent from .env → load_config passes "json" default
+// (dotenv::getenv("OUTPUT_FORMAT","json") returns "json" when key absent)
+// ---------------------------------------------------------------------------
+
+TEST(ValidateConfig, AC_H8_DefaultOutputFormatIsJson) {
+    // Simulates the "json" default that load_config passes when key is absent
+    auto result = validate_config("s.csv", "i.csv", ",", "500", "json");
+
+    ASSERT_TRUE(std::holds_alternative<Config>(result));
+    EXPECT_EQ(std::get<Config>(result).output_format, "json");
+}
+
+// ---------------------------------------------------------------------------
+// AC-S6  SALES_FILE or INVENTORY_FILE key completely absent → [ERROR] + var name
+// (dotenv::getenv returns "" → validate_config rejects empty file paths)
+// ---------------------------------------------------------------------------
+
+TEST(ValidateConfig, AC_S6_MissingSalesFileKeyReturnsError) {
+    auto result = validate_config("", "inventory.csv", ",", "1000", "json");
+
+    ASSERT_TRUE(std::holds_alternative<std::string>(result));
+    const auto& err = std::get<std::string>(result);
+    EXPECT_NE(err.find("[ERROR]"),     std::string::npos);
+    EXPECT_NE(err.find("SALES_FILE"), std::string::npos);
+}
+
+TEST(ValidateConfig, AC_S6_MissingInventoryFileKeyReturnsError) {
+    auto result = validate_config("sales.csv", "", ",", "1000", "json");
+
+    ASSERT_TRUE(std::holds_alternative<std::string>(result));
+    const auto& err = std::get<std::string>(result);
+    EXPECT_NE(err.find("[ERROR]"),        std::string::npos);
+    EXPECT_NE(err.find("INVENTORY_FILE"), std::string::npos);
 }

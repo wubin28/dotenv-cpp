@@ -10,6 +10,14 @@ std::variant<Config, std::string> validate_config(
     const std::string& min_amount_str,
     const std::string& output_format_str) {
 
+    // AC-S6: SALES_FILE and INVENTORY_FILE keys must be present
+    if (sales_file.empty()) {
+        return "[ERROR] SALES_FILE is not set in .env.";
+    }
+    if (inventory_file.empty()) {
+        return "[ERROR] INVENTORY_FILE is not set in .env.";
+    }
+
     Config config;
     config.sales_file = sales_file;
     config.inventory_file = inventory_file;

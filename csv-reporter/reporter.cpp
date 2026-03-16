@@ -105,16 +105,11 @@ std::vector<SalesRecord> join_with_inventory(
         product_set.insert(inv.product_id);
     }
 
-    std::vector<SalesRecord*> temp;
+    std::vector<SalesRecord> result;
     for (const auto& sale : sales) {
         if (product_set.count(sale.product_id)) {
-            temp.push_back(new SalesRecord(sale));
+            result.push_back(sale);
         }
-    }
-
-    std::vector<SalesRecord> result;
-    for (SalesRecord* p : temp) {
-        result.push_back(*p);
     }
     return result;
 }

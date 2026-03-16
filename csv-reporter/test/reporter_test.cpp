@@ -6,6 +6,7 @@
 //  AC-H3 – parse_sales_rows / parse_inventory_rows work with pipe-delimited data
 //  AC-H4 – filter_by_amount with threshold above all amounts yields empty summary
 //  AC-H5 – format_csv_output produces correct CSV header + data row
+//  AC-H7 – join_with_inventory where no product_id matches → empty summary, no error
 //  AC-S2 – read_csv_file returns failure for a non-existent path
 //  AC-S3 – parse_sales_rows skips rows with < 3 fields and warns with line number
 
@@ -269,4 +270,40 @@ TEST(ParseSalesRows, AC_S3_ValidRowsAfterMalformedRowAreStillProcessed) {
     ASSERT_EQ(sales.size(), 1u);
     EXPECT_EQ(sales[0].order_id, "O001");
     EXPECT_NE(warnings.str().find("line 2"), std::string::npos);
+}
+
+// ---------------------------------------------------------------------------
+// AC-H7  Inner-join produces no matches → empty summary (count=0), no [ERROR]
+// ---------------------------------------------------------------------------
+
+TEST(JoinWithInventory, AC_H7_NoMatchingProductsYieldsEmptyJoin) {
+    // All sales product_ids are absent from the inventory
+    std::vector<SalesRecord> sales = {
+        {"O001", "P999", 1500.0},
+        {"O002", "P888", 800.0},
+    };
+    std::vector<InventoryRecord> inventory = {{"P001", 100}, {"P002", 200}};
+
+    auto joined = join_with_inventory(sales, inventory);
+
+    EXPECT_TRUE(joined.empty());
+}
+
+TEST(ComputeSummary, AC_H7_NoMatchJoinYieldsZeroCountSummary) {
+    auto joined = join_with_inventory(
+        {{"O001", "P999", 500.0}},
+        {{"P001", 100}}
+    );
+    auto filtered = filter_by_amount(joined, 0.0);
+    auto summary  = compute_summary(filtered);
+
+    EXPECT_EQ(summary.count, 0);
+    EXPECT_DOUBLE_EQ(summary.total,   0.0);
+    EXPECT_DOUBLE_EQ(summary.average, 0.0);
+}
+
+TEST(FormatJson, AC_H7_NoMatchSummaryJsonHasCountZero) {
+    const auto json = format_json(compute_summary({}));
+    EXPECT_NE(json.find("\"count\": 0"), std::string::npos);
+    EXPECT_EQ(json.find("[ERROR]"), std::string::npos);
 }
