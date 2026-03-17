@@ -52,7 +52,8 @@ std::variant<Config, std::string> load_config(const std::string& env_file) {
         }
     }
 
-    dotenv::init(env_file.c_str());
+    const char* env_path = std::string(env_file).c_str();
+    dotenv::init(env_path);
 
     const auto sales_file       = dotenv::getenv("SALES_FILE", "");
     const auto inventory_file   = dotenv::getenv("INVENTORY_FILE", "");
