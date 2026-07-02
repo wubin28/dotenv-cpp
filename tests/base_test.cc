@@ -1,11 +1,41 @@
+#include <cstdio>
+#include <fstream>
+#include <string>
+
 #include <gtest/gtest.h>
 #include <dotenv.h>
 
 class BaseTestFixture : public ::testing::Test {
 protected:
     void SetUp() override {
-        dotenv::init(".env.example");
+        remove(kEnvFile);
+        ClearEnvVar("DEFINED_VAR");
+        ClearEnvVar("BASE");
+        ClearEnvVar("EXPANDED");
     }
+
+    void TearDown() override {
+        remove(kEnvFile);
+        ClearEnvVar("DEFINED_VAR");
+        ClearEnvVar("BASE");
+        ClearEnvVar("EXPANDED");
+    }
+
+    void LoadEnvFile(const std::string& contents) {
+        std::ofstream env_file(kEnvFile);
+        ASSERT_TRUE(env_file.is_open());
+        env_file << contents;
+        env_file.close();
+
+        dotenv::init(kEnvFile);
+    }
+
+    static void ClearEnvVar(const char* name) {
+        const auto unset = std::string(name) + "=";
+        _putenv(unset.c_str());
+    }
+
+    static constexpr const char* kEnvFile = ".env.base_test";
 };
 
 TEST_F(BaseTestFixture, ReadUndefinedVariableWithDefaultValue) {
@@ -14,12 +44,15 @@ TEST_F(BaseTestFixture, ReadUndefinedVariableWithDefaultValue) {
 }
 
 TEST_F(BaseTestFixture, ReadDefinedVariableWithDefaultValue) {
+    LoadEnvFile("DEFINED_VAR=OLHE\n");
+
     const auto _value = dotenv::getenv("DEFINED_VAR", "EHLO");
     ASSERT_EQ(_value, "OLHE");
 }
 
 TEST_F(BaseTestFixture, VariableReferenceExpansion) {
-    // 需要先在.env.example中添加测试数据
+    LoadEnvFile("BASE=hello\nEXPANDED=$BASE world\n");
+
     const auto base = std::getenv("BASE");
     const auto expanded = std::getenv("EXPANDED");
 
